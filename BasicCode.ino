@@ -39,6 +39,8 @@ void setup() {
   pinMode(left_pwm_pin,OUTPUT);
 
   digitalWrite(left_dir_pin,LOW);
+  
+  //Change to LOW on tabletop
   digitalWrite(left_nslp_pin,HIGH);
 
   pinMode(right_nslp_pin,OUTPUT);
@@ -46,6 +48,8 @@ void setup() {
   pinMode(right_pwm_pin,OUTPUT);
 
   digitalWrite(right_dir_pin,LOW);
+
+  //Change to LOW on tabletop
   digitalWrite(right_nslp_pin,HIGH);
 
   pinMode(LED_RF, OUTPUT);
