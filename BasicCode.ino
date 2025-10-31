@@ -16,6 +16,10 @@ const int left_nslp_pin=31; // nslp ==> awake & ready for PWM
 const int left_dir_pin=29;
 const int left_pwm_pin=40;
 
+const int right_nslp_pin = 11;
+const int right_dir_pin = 30;
+const int right_pwm_pin = 39;
+
 const int LED_RF = 41;
 
 ///////////////////////////////////
@@ -27,6 +31,13 @@ void setup() {
 
   digitalWrite(left_dir_pin,LOW);
   digitalWrite(left_nslp_pin,HIGH);
+
+  pinMode(right_nslp_pin,OUTPUT);
+  pinMode(right_dir_pin,OUTPUT);
+  pinMode(right_pwm_pin,OUTPUT);
+
+  digitalWrite(right_dir_pin,LOW);
+  digitalWrite(right_nslp_pin,HIGH);
 
   pinMode(LED_RF, OUTPUT);
   
@@ -40,11 +51,13 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly: 
-  int leftSpd = 70;
-
+  //int leftSpd = 70;
+  //int rightSpd = 70;
+  int baseSpd = 70;
 //  ECE3_read_IR(sensorValues);
 
-  analogWrite(left_pwm_pin,leftSpd);
+  analogWrite(left_pwm_pin,baseSpd);
+  analogWrite(right_pwm_pin, baseSpd);
 
 // 
   
