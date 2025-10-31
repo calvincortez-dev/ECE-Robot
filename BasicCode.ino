@@ -12,7 +12,8 @@
 
 //uint16_t sensorValues[8]; // right -> left, 0 -> 7
 
-//left and right wheel pins   
+uint16_t sensorValues[8];
+
 const int left_nslp_pin=31; // nslp ==> awake & ready for PWM
 const int left_dir_pin=29;
 const int left_pwm_pin=40;
@@ -50,13 +51,15 @@ void setup() {
   
 }
 
-void loop() {
-  // put your main code here, to run repeatedly: 
-  // Set wheels' baseSpd 
-
-  int baseSpd = 70;
-//  ECE3_read_IR(sensorValues);
+void loop() 
+{
+  // read raw sensor values
+  ECE3_read_IR(sensorValues);
   
+
+  // put your main code here, to run repeatedly: 
+  int baseSpd = 70;
+
   analogWrite(left_pwm_pin,baseSpd);
   analogWrite(right_pwm_pin, baseSpd);
 
