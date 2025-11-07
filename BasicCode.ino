@@ -40,6 +40,7 @@ long calculated[8];
 long normalized[8];
 
 int Error = 0;
+int prevError = 0;
 float diffSum = 0;
 float PIDSum = 0;
 
@@ -107,6 +108,7 @@ void loop()
 
   // Initialize Kp
   float kP = (Error * baseSpd);
+  float kD = 0; // placeholder for now so that code doesn't give us errors
 
 /*DIFSUM FOR DERIVATIVE CONTROL*/
 diffSum = (Error - prevError); 
