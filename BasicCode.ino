@@ -11,8 +11,12 @@
 //#include <ECE3_LCD7.h>
 
 //uint16_t sensorValues[8]; // right -> left, 0 -> 7
+#include <ECE3.h>
+
 
 uint16_t sensorValues[8];
+
+
 
 //left wheel pins declaration
 const int left_nslp_pin=31; // nslp ==> awake & ready for PWM
@@ -27,20 +31,28 @@ const int right_pwm_pin = 39;
 const int LED_RF = 41;
 
 //Calibration Values for IR Sensor
-long sensorMin[8] = {872, 710, 756, 687, 730, 688, 780, 849};
+long sensorMin[8] = {872, 710, 756, 664, 730, 688, 780, 849};
 long sensorMax[8] = {1628, 1790, 1744, 1514, 1447, 1812, 1720, 1651};
-long weights[8] = {-15, -14, -12, -8, 8, 12, 14, 15}; //Chose -15 -14 -12 -8 weighted sum scheme
+
+// Weights for weighted-average error (right negative, left positive)
+long weights[8] = {15, 14, 12, 8, -8, -12, -14, -15}; //Chose -15 -14 -12 -8 weighted sum scheme
+long calculated[8];
+long normalized[8];
+
+int Error = 0;
+float diffSum = 0;
+float PIDSum = 0;
 
 ///////////////////////////////////
-void setup() {
+void setup() 
+{
+  
 // put your setup code here, to run once:
   pinMode(left_nslp_pin,OUTPUT);
   pinMode(left_dir_pin,OUTPUT);
   pinMode(left_pwm_pin,OUTPUT);
 
   digitalWrite(left_dir_pin,LOW);
-  
-  //Change to LOW on tabletop
   digitalWrite(left_nslp_pin,HIGH);
 
   pinMode(right_nslp_pin,OUTPUT);
@@ -48,8 +60,6 @@ void setup() {
   pinMode(right_pwm_pin,OUTPUT);
 
   digitalWrite(right_dir_pin,LOW);
-
-  //Change to LOW on tabletop
   digitalWrite(right_nslp_pin,HIGH);
 
   pinMode(LED_RF, OUTPUT);
@@ -58,7 +68,7 @@ void setup() {
 
 // set the data rate in bits/second for serial data transmission
   Serial.begin(9600); 
-  delay(2000); //Wait 2 seconds before starting 
+  // delay(2000); //Wait 2 seconds before starting 
   
 }
 
@@ -67,15 +77,46 @@ void loop()
   // read raw sensor values
   ECE3_read_IR(sensorValues);
   
+  //Subtract sensor to its respective min
+  for (int i = 0; i < 8; ++i)
+  {
+    calculated[i] = abs(sensorValues[i] - sensorMin[i]);
+  }
+
+  //Normalize each sensor to 1000 after subtracting the minimum (1000 * calculated / sensorMax)
+  for (int j = 0; j < 8; j++)
+  {
+    normalized[j] = {((1000) * calculated[j])/1000};
+  }
+  
+  //Compute Weighted Avg (15-14-12-8)
+  for (int i = 0; i < 8; i++)
+  {
+    Error += (normalized[i] * weights[i]);
+  }
+
+  Error = Error/8;
 
   // put your main code here, to run repeatedly: 
   int baseSpd = 70;
-
-  analogWrite(left_pwm_pin,baseSpd);
-  analogWrite(right_pwm_pin, baseSpd);
-
-// 
+  int leftSpd = baseSpd;
+  int rightSpd = baseSpd;
   
+  analogWrite(left_pwm_pin,leftSpd);
+  analogWrite(right_pwm_pin, rightSpd);
+
+  // Initialize Kp
+  float kP = (Error * baseSpd);
+
+/*DIFSUM FOR DERIVATIVE CONTROL*/
+diffSum = (Error - prevError); 
+
+// CALCULATE PIDSUM
+PIDSum = (kP * Error) + (kD * diffSum);
+leftSpd += PIDSum;
+rightSpd += PIDSum;
+
+
 //  ECE3_read_IR(sensorValues);
 
   digitalWrite(LED_RF, HIGH);
