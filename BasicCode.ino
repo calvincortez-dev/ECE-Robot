@@ -44,7 +44,7 @@ float diffSum = 0;
 
 int error = 0;
 
-int prevError = 0;
+int prevError;
 
 
 ///////////////////////////////////
@@ -114,7 +114,7 @@ void loop()
   diffSum = (error - prevError);
 
   // Initialize kP
-  float kP = (error * baseSpd);
+  float kP = .05;
 
   // Initialize kD
   float kD = 10/4362;
