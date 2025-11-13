@@ -44,7 +44,7 @@ float diffSum = 0;
 
 int error = 0;
 
-int prevError;
+int prevError = 0;
 
 
 ///////////////////////////////////
@@ -64,16 +64,16 @@ void setup()
   pinMode(right_pwm_pin,OUTPUT);
 
   digitalWrite(right_dir_pin,LOW);
-  digitalWrite(right_nslp_pin,HIGH);
+  digitalWrite(right_nslp_pin, HIGH);
 
   pinMode(LED_RF, OUTPUT);
   
-//  ECE3_Init();
+  ECE3_Init();
 
 // set the data rate in bits/second for serial data transmission
   Serial.begin(9600);
   // Serial.print(19200);
-  delay(2000); //Wait 2 seconds before starting
+  // delay(2000); //Wait 2 seconds before starting
   
 }
 
@@ -83,9 +83,9 @@ void loop()
   ECE3_read_IR(sensorValues);
 
   //Subtract sensor to its respective min
-  for (int i = 0; i < 8; ++i)
+  for (int i = 0; i < 8; i++)
   {
-    calculated[i] = abs(sensorValues[i] - sensorMin[i]);
+    calculated[i] = sensorValues[i] - sensorMin[i];
   }
 
   //Normalize each sensor to 1000 after subtracting the minimum (1000 * calculated / sensorMax)
@@ -104,9 +104,7 @@ void loop()
   
 
   // put your main code here, to run repeatedly: 
-  int baseSpd = 30;
-  
-  int leftSpd = 30;
+  int leftSpd = 33;
   int rightSpd = 30;
 
 
@@ -114,10 +112,10 @@ void loop()
   diffSum = (error - prevError);
 
   // Initialize kP
-  float kP = .05;
+  float kP = 15/2181;
 
   // Initialize kD
-  float kD = 10/4362;
+  float kD = 25/4362;
 
   prevError = error; // prevError for next loop
 
