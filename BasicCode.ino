@@ -111,5 +111,13 @@ void loop()
   analogWrite(left_pwm_pin,leftSpd);
   analogWrite(right_pwm_pin, rightSpd);
   
-    
+  //UNComment if DEBUGGING OR comment if not DEBUGGING
+  /*
+  Serial.print("PIDSUM: " + PIDSum);
+  Serial.print("kP: " + kP);
+  Serial.print("kD: " + kD);
+  Serial.print("leftSpd: " + leftSpd);
+  Serial.print("rightSpd: " + rightSpd);
+  Serial.print("error: " + error);
+  */  
   }
