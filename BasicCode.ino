@@ -39,10 +39,13 @@ long weights[8] = {15, 14, 12, 8, -8, -12, -14, -15}; //Chose -15 -14 -12 -8 wei
 long calculated[8];
 long normalized[8];
 
-int Error = 0;
-int prevError = 0;
+// Initialize diffSum
 float diffSum = 0;
-float PIDSum = 0;
+
+int error = 0;
+
+int prevError = 0;
+
 
 ///////////////////////////////////
 void setup() 
@@ -68,8 +71,9 @@ void setup()
 //  ECE3_Init();
 
 // set the data rate in bits/second for serial data transmission
-  Serial.begin(9600); 
-  // delay(2000); //Wait 2 seconds before starting 
+  Serial.begin(9600);
+  // Serial.print(19200);
+  delay(2000); //Wait 2 seconds before starting
   
 }
 
@@ -77,7 +81,7 @@ void loop()
 {
   // read raw sensor values
   ECE3_read_IR(sensorValues);
-  
+
   //Subtract sensor to its respective min
   for (int i = 0; i < 8; ++i)
   {
@@ -93,37 +97,37 @@ void loop()
   //Compute Weighted Avg (15-14-12-8)
   for (int i = 0; i < 8; i++)
   {
-    Error += (normalized[i] * weights[i]);
+    error += (normalized[i] * weights[i]);
   }
 
-  Error = Error/8;
+  error = error/8;
+  
 
   // put your main code here, to run repeatedly: 
-  int baseSpd = 70;
-  int leftSpd = baseSpd;
-  int rightSpd = baseSpd;
+  int baseSpd = 30;
   
+  int leftSpd = 30;
+  int rightSpd = 30;
+
+
+  /*DIFSUM FOR DERIVATIVE CONTROL*/
+  diffSum = (error - prevError);
+
+  // Initialize kP
+  float kP = (error * baseSpd);
+
+  // Initialize kD
+  float kD = 10/4362;
+
+  prevError = error; // prevError for next loop
+
+  // CALCULATE PIDSUM
+  float PIDSum = (kP * error) + (kD * diffSum);
+  leftSpd += PIDSum;
+  rightSpd -= PIDSum;
+
   analogWrite(left_pwm_pin,leftSpd);
   analogWrite(right_pwm_pin, rightSpd);
-
-  // Initialize Kp
-  float kP = (Error * baseSpd);
-  float kD = 0; // placeholder for now so that code doesn't give us errors
-
-/*DIFSUM FOR DERIVATIVE CONTROL*/
-diffSum = (Error - prevError); 
-
-// CALCULATE PIDSUM
-PIDSum = (kP * Error) + (kD * diffSum);
-leftSpd += PIDSum;
-rightSpd += PIDSum;
-
-
-//  ECE3_read_IR(sensorValues);
-
-  digitalWrite(LED_RF, HIGH);
-  delay(250);
-  digitalWrite(LED_RF, LOW);
-  delay(250);
+  
     
   }
