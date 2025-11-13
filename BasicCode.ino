@@ -11,19 +11,17 @@
 //#include <ECE3_LCD7.h>
 
 //uint16_t sensorValues[8]; // right -> left, 0 -> 7
-#include <ECE3.h>
 
+#include <ECE3.h>
 
 uint16_t sensorValues[8];
 
-
-
-//left wheel pins declaration
+//left wheel pins 
 const int left_nslp_pin=31; // nslp ==> awake & ready for PWM
 const int left_dir_pin=29;
 const int left_pwm_pin=40;
 
-//right wheel pins declaration
+//right wheel pins 
 const int right_nslp_pin = 11;
 const int right_dir_pin = 30;
 const int right_pwm_pin = 39;
@@ -36,14 +34,11 @@ long sensorMax[8] = {1628, 1790, 1744, 1514, 1447, 1812, 1720, 1651};
 
 // Weights for weighted-average error (right negative, left positive)
 long weights[8] = {15, 14, 12, 8, -8, -12, -14, -15}; //Chose -15 -14 -12 -8 weighted sum scheme
-long calculated[8];
 long normalized[8];
 
-// Initialize diffSum
+// Initialize variables
 float diffSum = 0;
-
 int error = 0;
-
 int prevError = 0;
 
 
@@ -67,7 +62,7 @@ void setup()
   digitalWrite(right_nslp_pin, HIGH);
 
   pinMode(LED_RF, OUTPUT);
-  
+
   ECE3_Init();
 
 // set the data rate in bits/second for serial data transmission
@@ -83,39 +78,28 @@ void loop()
   ECE3_read_IR(sensorValues);
 
   //Subtract sensor to its respective min
-  for (int i = 0; i < 8; i++)
-  {
-    calculated[i] = sensorValues[i] - sensorMin[i];
-  }
-
   //Normalize each sensor to 1000 after subtracting the minimum (1000 * calculated / sensorMax)
+  //Compute Weighted Avg (15-14-12-8)
   for (int j = 0; j < 8; j++)
   {
-    normalized[j] = {((1000) * calculated[j])/1000};
-  }
-  
-  //Compute Weighted Avg (15-14-12-8)
-  for (int i = 0; i < 8; i++)
-  {
+    normalized[j] = ((1000) * (sensorValues[j] - sensorMin[j]))/sensorMax[j];
     error += (normalized[i] * weights[i]);
   }
-
-  error = error/8;
   
+  error = error/8;
 
   // put your main code here, to run repeatedly: 
-  int leftSpd = 33;
-  int rightSpd = 30;
-
+  float leftSpd = 30;
+  float rightSpd = 30;
 
   /*DIFSUM FOR DERIVATIVE CONTROL*/
   diffSum = (error - prevError);
 
   // Initialize kP
-  float kP = 15/2181;
+  float kP = static_cast<float>(15)/2181;
 
   // Initialize kD
-  float kD = 25/4362;
+  float kD = static_cast<float>(25)/4362;
 
   prevError = error; // prevError for next loop
 
