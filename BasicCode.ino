@@ -41,6 +41,8 @@ float diffSum = 0;
 int error = 0;
 int prevError = 0;
 
+unsigned long lastPrintTime = 0;
+const unsigned long PRINT_INTERVAL = 200;
 
 ///////////////////////////////////
 void setup() 
@@ -52,14 +54,14 @@ void setup()
   pinMode(left_pwm_pin,OUTPUT);
 
   digitalWrite(left_dir_pin,LOW);
-  digitalWrite(left_nslp_pin,HIGH);
+  digitalWrite(left_nslp_pin, HIGH); // LOW for debugging, HIGH for testing
 
   pinMode(right_nslp_pin,OUTPUT);
   pinMode(right_dir_pin,OUTPUT);
   pinMode(right_pwm_pin,OUTPUT);
 
   digitalWrite(right_dir_pin,LOW);
-  digitalWrite(right_nslp_pin, HIGH);
+  digitalWrite(right_nslp_pin, HIGH); // LOW for debugging, HIGH for testing
 
   pinMode(LED_RF, OUTPUT);
 
@@ -68,7 +70,7 @@ void setup()
 // set the data rate in bits/second for serial data transmission
   Serial.begin(9600);
   // Serial.print(19200);
-  // delay(2000); //Wait 2 seconds before starting
+  delay(2000); //Wait 2 seconds before starting
   
 }
 
@@ -80,26 +82,30 @@ void loop()
   //Subtract sensor to its respective min
   //Normalize each sensor to 1000 after subtracting the minimum (1000 * calculated / sensorMax)
   //Compute Weighted Avg (15-14-12-8)
+
   for (int j = 0; j < 8; j++)
   {
     normalized[j] = ((1000) * (sensorValues[j] - sensorMin[j]))/sensorMax[j];
-    error += (normalized[i] * weights[i]);
+    error += (normalized[j] * weights[j]);
+
   }
   
+  
+
   error = error/8;
 
   // put your main code here, to run repeatedly: 
-  float leftSpd = 30;
-  float rightSpd = 30;
+  float leftSpd = 15;
+  float rightSpd = 15;
 
   /*DIFSUM FOR DERIVATIVE CONTROL*/
   diffSum = (error - prevError);
 
   // Initialize kP
-  float kP = static_cast<float>(15)/2181;
+  float kP = (7.5)/2181.0;
 
   // Initialize kD
-  float kD = static_cast<float>(25)/4362;
+  float kD = (15.0)/4362.0;
 
   prevError = error; // prevError for next loop
 
@@ -110,14 +116,72 @@ void loop()
 
   analogWrite(left_pwm_pin,leftSpd);
   analogWrite(right_pwm_pin, rightSpd);
-  
-  //UNComment if DEBUGGING OR comment if not DEBUGGING
-  /*
-  Serial.print("PIDSUM: " + PIDSum);
-  Serial.print("kP: " + kP);
-  Serial.print("kD: " + kD);
-  Serial.print("leftSpd: " + leftSpd);
-  Serial.print("rightSpd: " + rightSpd);
-  Serial.print("error: " + error);
-  */  
+
+  // Donut section
+  bool all2500 = true;  
+
+  for (int i = 0; i < 8; i++) 
+  {
+    if (sensorValues[i] != 2500) 
+    {
+      all2500 = false;
+      break;  // no need to keep checking
+    }
   }
+
+  if (all2500) 
+  {
+    leftSpd  = 30;
+    rightSpd = 0;
+    analogWrite(left_pwm_pin, leftSpd);
+    analogWrite(right_pwm_pin, rightSpd);
+    delay(1000);
+    return;
+  }
+
+  // end of main loop
+  // UNComment if DEBUGGING OR comment if not DEBUGGING
+
+    Serial.print("PIDSUM: ");
+    Serial.println(PIDSum);
+
+    Serial.print("kP: ");
+    Serial.println(kP);
+
+    Serial.print("kD: ");
+    Serial.println(kD);
+
+    Serial.print("leftSpd: ");
+    Serial.println(leftSpd);
+
+    Serial.print("rightSpd: ");
+    Serial.println(rightSpd);
+
+    Serial.print("error: ");
+    Serial.println(error);
+   
+    Serial.print("Sensor 1 Reading: ");
+    Serial.println(sensorValues[0]);
+
+    Serial.print("Sensor 2 Reading: ");
+    Serial.println(sensorValues[1]);
+
+    Serial.print("Sensor 3 Reading: ");
+    Serial.println(sensorValues[2]);
+
+    Serial.print("Sensor 4 Reading: ");
+    Serial.println(sensorValues[3]);
+
+    Serial.print("Sensor 5 Reading: ");
+    Serial.println(sensorValues[4]);
+
+    Serial.print("Sensor 6 Reading: ");
+    Serial.println(sensorValues[5]);
+
+    Serial.print("Sensor 7 Reading: ");
+    Serial.println(sensorValues[6]);
+
+    Serial.print("Sensor 8 Reading: ");
+    Serial.println(sensorValues[7]);
+  
+}
