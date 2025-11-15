@@ -117,10 +117,11 @@ void loop()
   analogWrite(left_pwm_pin,leftSpd);
   analogWrite(right_pwm_pin, rightSpd);
 
+ 
   // Donut section
   bool all2500 = true;  
 
-  for (int i = 0; i < 8; i++) 
+  for (int i = 0; i < 1; i++) // Note that Sensor count is from right to left if looking from a bird's eye view
   {
     if (sensorValues[i] != 2500) 
     {
@@ -135,7 +136,7 @@ void loop()
     rightSpd = 0;
     analogWrite(left_pwm_pin, leftSpd);
     analogWrite(right_pwm_pin, rightSpd);
-    delay(1000);
+    delay(2500);
     return;
   }
 
